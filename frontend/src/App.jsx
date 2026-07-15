@@ -4,7 +4,7 @@ import {
   Share2, FileText, Settings, UploadCloud, Send, 
   AlertTriangle, Download, RefreshCw, Play, Sparkles, HelpCircle,
   ChevronDown, ChevronRight, Copy, ExternalLink, Check, X,
-  PanelRightClose, PanelRightOpen, RotateCcw, Eye
+  PanelRightClose, PanelRightOpen, RotateCcw, Eye, Menu
 } from 'lucide-react';
 
 const API_BASE = "http://127.0.0.1:8000/api";
@@ -301,6 +301,7 @@ function DonutChart({ data }) {
    ============================================ */
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [cases, setCases] = useState([]);
   const [activeCaseId, setActiveCaseId] = useState(null);
   const [dashboardStats, setDashboardStats] = useState(null);
@@ -354,6 +355,7 @@ export default function App() {
 
   const switchTab = useCallback((tab) => {
     setActiveTab(tab);
+    setMobileNavOpen(false);
     setTabKey(prev => prev + 1);
   }, []);
 
@@ -639,8 +641,19 @@ export default function App() {
 
   return (
     <div className="app-container">
+      <button
+        className="mobile-nav-toggle"
+        type="button"
+        aria-label="Toggle investigation navigation"
+        aria-expanded={mobileNavOpen}
+        onClick={() => setMobileNavOpen(prev => !prev)}
+      >
+        <Menu size={20} />
+        <span>Workspace</span>
+      </button>
+      {mobileNavOpen && <button className="mobile-nav-scrim" type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} />}
       {/* Sidebar Navigation */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${mobileNavOpen ? 'mobile-open' : ''}`}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
             <Shield size={28} className="gradient-text" style={{ strokeWidth: 2.5 }} />
@@ -692,7 +705,8 @@ export default function App() {
               Active Investigation
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '2px' }}>
-              <select 
+              <select
+                aria-label="Active investigation case"
                 value={activeCaseId || ''} 
                 onChange={(e) => setActiveCaseId(e.target.value)}
                 style={{ 
@@ -1266,12 +1280,21 @@ export default function App() {
                     />
                   </div>
                   
-                  <div className="upload-zone" onClick={() => document.getElementById('ufdr-uploader').click()}>
+                  <div
+                    className={`upload-zone ${uploadFile ? 'has-file' : ''}`}
+                    onClick={() => document.getElementById('ufdr-uploader').click()}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const droppedFile = e.dataTransfer.files?.[0];
+                      if (droppedFile) setUploadFile(droppedFile);
+                    }}
+                  >
                     <UploadCloud size={36} style={{ color: 'var(--accent-cyan)' }} />
                     {uploadFile ? (
-                      <div>Selected: <strong>{uploadFile.name}</strong></div>
+                      <div>Ready for ingestion: <strong>{uploadFile.name}</strong></div>
                     ) : (
-                      <div>Click to select `.ufdr` forensic report ZIP</div>
+                      <div>Drop a `.ufdr` report here or click to browse</div>
                     )}
                     <input 
                       type="file" 
