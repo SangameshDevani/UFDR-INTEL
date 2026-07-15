@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.db
+.env
+data/
+node_modules/
+dist/
+*.ufdr
+!samples/

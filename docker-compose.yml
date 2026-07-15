@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ufdr
+      POSTGRES_PASSWORD: ufdr
+      POSTGRES_DB: ufdr_analyzer
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://ufdr:ufdr@postgres:5432/ufdr_analyzer
+    volumes:
+      - ./backend/data:/app/data
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
