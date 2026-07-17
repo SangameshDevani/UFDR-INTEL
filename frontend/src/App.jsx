@@ -75,6 +75,85 @@ function AnimatedCounter({ value, duration = 1200 }) {
 }
 
 /* ============================================
+   LOADING SKELETON COMPONENTS
+   ============================================ */
+function SkeletonStatCards() {
+  return (
+    <div className="stats-grid">
+      {[0, 1, 2, 3].map(i => (
+        <div key={i} className="skeleton skeleton-stat-card" />
+      ))}
+    </div>
+  );
+}
+
+function SkeletonPanel({ height = 200 }) {
+  return <div className="skeleton skeleton-panel" style={{ height }} />;
+}
+
+function EmptyState({ icon: Icon, title, description, action }) {
+  return (
+    <div className="empty-state">
+      {Icon && (
+        <div className="empty-state-icon">
+          <Icon size={32} />
+        </div>
+      )}
+      <div className="empty-state-title">{title}</div>
+      {description && <div className="empty-state-desc">{description}</div>}
+      {action}
+    </div>
+  );
+}
+
+/* ============================================
+   WELCOME SCREEN (no case loaded)
+   ============================================ */
+function WelcomeScreen({ onGenerate, onGoSettings, generating }) {
+  const features = [
+    { icon: MessageSquare, title: 'Chat Analysis', desc: 'Decode & inspect messaging threads' },
+    { icon: Share2, title: 'Linkage Graph', desc: 'Map contact relationships visually' },
+    { icon: MapPin, title: 'Geo Tracking', desc: 'Trace location history & routes' },
+    { icon: Sparkles, title: 'AI Forensics', desc: 'Natural-language case queries' },
+  ];
+  return (
+    <div className="welcome-hero">
+      <span className="welcome-badge">
+        <Shield size={14} /> UFDR Intelligence Platform
+      </span>
+      <h1>AI-Powered Forensic Device Analysis</h1>
+      <p>
+        Ingest UFDR extraction reports, auto-flag suspicious communications,
+        and collaborate with an AI agent to investigate digital evidence.
+      </p>
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <button className="btn btn-primary" onClick={onGenerate} disabled={generating}>
+          {generating ? <RefreshCw className="spin" size={18} /> : <Play size={18} />}
+          {generating ? 'Preparing Demo Case…' : 'Load Demo Case'}
+        </button>
+        <button className="btn btn-secondary" onClick={onGoSettings}>
+          <UploadCloud size={18} /> Ingest Your Own UFDR
+        </button>
+      </div>
+      <div className="welcome-features">
+        {features.map((f, i) => {
+          const Icon = f.icon;
+          return (
+            <div key={i} className="welcome-feature reveal" style={{ animationDelay: `${i * 80}ms` }}>
+              <div className="welcome-feature-icon">
+                <Icon size={22} style={{ color: 'var(--accent-cyan)' }} />
+              </div>
+              <div className="welcome-feature-title">{f.title}</div>
+              <div className="welcome-feature-desc">{f.desc}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================
    SVG BAR CHART (Message Timeline)
    ============================================ */
 function BarChart({ data }) {
@@ -752,8 +831,30 @@ export default function App() {
         <div className="content-pane" key={tabKey}>
           <div className="tab-content-enter">
 
-          {activeTab === 'dashboard' && dashboardStats && (
+          {activeTab === 'dashboard' && !activeCaseId && (
+            <WelcomeScreen
+              onGenerate={loadMockCase}
+              onGoSettings={() => switchTab('settings')}
+              generating={uploading}
+            />
+          )}
+
+          {activeTab === 'dashboard' && activeCaseId && !dashboardStats && (
             <div>
+              <div style={{ marginBottom: '32px' }}>
+                <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>Forensic Case Details</h1>
+                <p style={{ color: 'var(--text-secondary)' }}>Loading extraction summary…</p>
+              </div>
+              <SkeletonStatCards />
+              <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '24px', marginTop: '24px' }}>
+                <SkeletonPanel height={240} />
+                <SkeletonPanel height={240} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'dashboard' && dashboardStats && (
+            <div className="reveal">
               <div style={{ marginBottom: '32px' }}>
                 <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>Forensic Case Details</h1>
                 <p style={{ color: 'var(--text-secondary)' }}>
@@ -1059,8 +1160,17 @@ export default function App() {
             </div>
           )}
 
-          {activeTab === 'chats' && (
-            <div className="chat-layout">
+          {activeTab === 'chats' && !activeCaseId && (
+            <EmptyState
+              icon={MessageSquare}
+              title="No Active Case"
+              description="Load a forensic case to browse extracted chat threads and message conversations."
+              action={<button className="btn btn-primary" onClick={loadMockCase} disabled={uploading} style={{ marginTop: '8px' }}><Play size={16} /> Load Demo Case</button>}
+            />
+          )}
+
+          {activeTab === 'chats' && activeCaseId && (
+            <div className="chat-layout reveal">
               {/* Thread list sidebar with search */}
               <div className="chat-threads">
                 <h3 style={{ marginBottom: '12px', paddingLeft: '8px' }}>Conversations</h3>
@@ -1099,6 +1209,13 @@ export default function App() {
                     </div>
                   </div>
                 ))}
+                {filteredThreads.length === 0 && !chatSearchQuery && (
+                  <div style={{ padding: '24px 8px', textAlign: 'center' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      No conversations extracted yet.
+                    </div>
+                  </div>
+                )}
                 {filteredThreads.length === 0 && chatSearchQuery && (
                   <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     No conversations matching "{chatSearchQuery}"
@@ -1164,8 +1281,17 @@ export default function App() {
             </div>
           )}
 
+          {activeTab === 'linkages' && !activeCaseId && (
+            <EmptyState
+              icon={Share2}
+              title="No Active Case"
+              description="Load a forensic case to visualize the communication linkage graph between the device owner and contacts."
+              action={<button className="btn btn-primary" onClick={loadMockCase} disabled={uploading} style={{ marginTop: '8px' }}><Play size={16} /> Load Demo Case</button>}
+            />
+          )}
+
           {activeTab === 'linkages' && activeCaseId && (
-            <div>
+            <div className="reveal">
               <div style={{ marginBottom: '24px' }}>
                 <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>Relationship Linkage Graph</h1>
                 <p style={{ color: 'var(--text-secondary)' }}>
@@ -1179,8 +1305,17 @@ export default function App() {
             </div>
           )}
 
-          {activeTab === 'locations' && (
-            <div>
+          {activeTab === 'locations' && !activeCaseId && (
+            <EmptyState
+              icon={MapPin}
+              title="No Active Case"
+              description="Load a forensic case to view extracted geolocation coordinates and movement history."
+              action={<button className="btn btn-primary" onClick={loadMockCase} disabled={uploading} style={{ marginTop: '8px' }}><Play size={16} /> Load Demo Case</button>}
+            />
+          )}
+
+          {activeTab === 'locations' && activeCaseId && (
+            <div className="reveal">
               <div style={{ marginBottom: '24px' }}>
                 <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>Geolocation Coordinates Registry</h1>
                 <p style={{ color: 'var(--text-secondary)' }}>
@@ -1378,8 +1513,9 @@ export default function App() {
             </div>
           ))}
           {aiChatLoading && (
-            <div className="ai-bubble bot" style={{ display: 'flex', gap: '6px' }}>
-              <RefreshCw className="spin" size={14} /> AI is thinking...
+            <div className="ai-bubble bot" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="typing-dots"><span /><span /><span /></span>
+              AI is analyzing the case data…
             </div>
           )}
         </div>
