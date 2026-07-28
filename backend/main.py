@@ -175,9 +175,8 @@ def get_dashboard_stats(case_id: str):
         "recent_flagged": recent_flagged,
         "msg_chart_data": msg_chart_data
     }
-
 @app.post("/api/query")
-def run_query(req: QueryRequest, api_key: Optional[str] = Header(None)):
+def run_query(req: QueryRequest, api_key: Optional[str] = Header(None, alias="GEMINI-API-KEY")):
     conn = get_db_connection(DB_NAME)
     cursor = conn.cursor()
     
