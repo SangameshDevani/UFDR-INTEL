@@ -162,9 +162,7 @@ Any case data referenced in demos (including sample `.ufdr` files) is entirely f
 
 ---
 
-## 📝 License
 
-*(Add your chosen license here — e.g. MIT, Apache 2.0. If unsure, [choosealicense.com](https://choosealicense.com/) is a good starting point.)*
 
 ---
 
