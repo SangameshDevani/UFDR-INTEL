@@ -18,10 +18,10 @@ app = FastAPI(title="UFDR AI Forensic Analysis Tool API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-   allow_origins=[
-    "http://localhost:5173",
-    "https://YOUR-VERCEL-URL-WILL-GO-HERE.vercel.app",
-],  # For local dev simplicity, allow Vite server
+    allow_origins=[
+        "http://localhost:5173",
+        "https://ufdr-intel.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
