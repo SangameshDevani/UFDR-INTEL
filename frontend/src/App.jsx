@@ -7,7 +7,7 @@ import {
   PanelRightClose, PanelRightOpen, RotateCcw, Eye, Menu
 } from 'lucide-react';
 
-const API_BASE = "http://127.0.0.1:8000/api";
+const API_BASE = "https://ufdr-intel-backend.onrender.com/api";
 
 /* ============================================
    TOAST NOTIFICATION SYSTEM
