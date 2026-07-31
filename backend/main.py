@@ -17,7 +17,10 @@ app = FastAPI(title="UFDR AI Forensic Analysis Tool API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For local dev simplicity, allow Vite server
+   allow_origins=[
+    "http://localhost:5173",
+    "https://YOUR-VERCEL-URL-WILL-GO-HERE.vercel.app",
+],  # For local dev simplicity, allow Vite server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -505,5 +508,5 @@ def datetime_str():
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
